@@ -1,0 +1,48 @@
+{
+  "name": "adobe-pdf-viewer",
+  "displayName": "adobe-pdf-viewer",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.1"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:pdf"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "pdf",
+        "extensions": [
+          ".pdf"
+        ],
+        "aliases": [
+          "PDF"
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "extension.processPDF",
+        "title": "Process PDF"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.95.0",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "20.x",
+    "eslint": "^9.13.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
