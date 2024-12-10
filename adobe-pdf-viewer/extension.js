@@ -17,6 +17,15 @@ function activate(context) {
     });
 }
 
+function fetchBuffer(uri) {
+    return new Promise((resolve) => {
+        vscode.workspace.fs.readFile(uri).then((data) => {
+            console.log(data);
+            resolve(data);
+        });
+    });
+}
+
 function createWebviewPanel(uri) {
     const panel = vscode.window.createWebviewPanel(
         'pdfViewer', // Internal identifier
@@ -29,6 +38,36 @@ function createWebviewPanel(uri) {
 
     // HTML content for the Webview
     panel.webview.html = embed(uri);
+
+    setTimeout(() => {
+        const previewPromise = fetchBuffer(uri);
+        previewFile(previewPromise);
+    },2000);
+}
+
+function previewFile(previewPromise) {
+    var adobeDCView = new global.window.AdobeDC.EmbedView({
+        integrationName: "Onedrive",
+        isEnterpriseEcoSystem: true,
+        supportDarkMode: true,
+        divId: "root",
+        applicationVersion: "322.3232.32",
+        releaseYear: 2020,
+        analyticsInfo: {
+            callingApp: "dc-embed-local"
+        },
+        helpUrl: "https://helpx.adobe.com/document-cloud/help/using-google-drive.html",
+        imsClientId: "dc-local-embed-viewer",
+        userVoiceConfig: {
+            userVoiceKey: "6gNXXegDB6rtHARrNKRF8w",
+            userVoiceForumId: "926557",
+            userVoiceUrl: "https://acrobat.uservoice.com/forums/931921-adobe-acrobat-in-browsers",
+        },
+        persistence: "transient",
+    });
+    var previewPromise = adobeDCView.previewFile({
+        content: { promise: previewPromise },
+    });
 }
 
 
@@ -40,9 +79,13 @@ function embed(uri) {
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Adobe Embed Viewer</title>
+            <script>
+                const vscode = acquireVsCodeApi();
+            </script>
+            <script async src="https://acrobat.adobe.com/embed-viewer/1.46.0/embed.js"></script>
         </head>
         <body>
-            <h1>PDF Viewer</h1>
+            <div id="root" style="height: 100vh; width: 100vw;margin: 0 auto;"></div>
             <p>Processing PDF: ${uri.fsPath}</p>
             <script>
                
