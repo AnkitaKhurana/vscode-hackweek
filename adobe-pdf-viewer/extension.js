@@ -31,6 +31,7 @@ function createWebviewPanel(uri) {
     panel.webview.html = embed(uri);
 }
 
+
 function embed(uri) {
     return `
         <!DOCTYPE html>
