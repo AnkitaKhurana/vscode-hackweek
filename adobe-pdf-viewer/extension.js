@@ -25,8 +25,10 @@ function fetchBuffer(uri) {
         });
     });
 }
-
+let cspSource;
+let scriptUri;
 function createWebviewPanel(uri) {
+    vscode.debug.activeDebugConsole.append("ok");
     const panel = vscode.window.createWebviewPanel(
         'pdfViewer', // Internal identifier
         `PDF Viewer - ${uri.path.split('/').pop()}`, // Panel title
@@ -35,14 +37,14 @@ function createWebviewPanel(uri) {
             enableScripts: true, // Enable JavaScript execution in the webview
         }
     );
-
+    scriptUri = panel.webview.asWebviewUri(vscode.Uri.file("https://acrobat.adobe.com/embed-viewer/1.46.0/embed.js"))
     // HTML content for the Webview
+    cspSource = panel.webview.cspSource 
     panel.webview.html = embed(uri);
+    setTimeout(()=>{
+        previewFile(fetchBuffer(uri));
+    },1000);
 
-    setTimeout(() => {
-        const previewPromise = fetchBuffer(uri);
-        previewFile(previewPromise);
-    },2000);
 }
 
 function previewFile(previewPromise) {
@@ -70,26 +72,27 @@ function previewFile(previewPromise) {
     });
 }
 
-
 function embed(uri) {
+
     return `
         <!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src ${cspSource}; style-src ${cspSource};">
+            <div id="logs"></div>
             <title>Adobe Embed Viewer</title>
-            <script>
-                const vscode = acquireVsCodeApi();
-            </script>
-            <script async src="https://acrobat.adobe.com/embed-viewer/1.46.0/embed.js"></script>
-        </head>
+            <script src="${scriptUri}"></script>
+
+            
+           
+            </head>
         <body>
-            <div id="root" style="height: 100vh; width: 100vw;margin: 0 auto;"></div>
+            <div id="pdfViewer"></div>
             <p>Processing PDF: ${uri.fsPath}</p>
-            <script>
-               
-            </script>
+            <div id="root" style="height: 100vh; width: 100vw;margin: 0 auto;"></div>
+           
         </body>
         </html>
     `;
